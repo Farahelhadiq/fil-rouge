@@ -4,13 +4,17 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Document</title>
-    <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="style.css">
 </head>
 <body>
   <nav>
         <div class="logo">
           <img src="logo.png" alt="Logo" />
-          
+        </div>
+        <div class="hamburger">
+          <span></span>
+          <span></span>
+          <span></span>
         </div>
         <ul class="nav-links">
           <li><a href="index.html" class="active">Accueil</a></li>
@@ -33,7 +37,7 @@
             <p>Baraime El Rahma offre un environnement chaleureux et stimulant où les enfants grandissent, apprennent et s'épanouissent.</p>
             <div class="intro-buttons">
               <a href="contact.html" class="btn btn-contact">Nous contacter</a>
-              <a href="#" class="btn btn-learn-more">En savoir plus</a>
+              <a href="A propos.html" class="btn btn-learn-more">En savoir plus</a>
             </div>
           </div>
           <div class="intro-image">
@@ -43,7 +47,6 @@
           </div>
         </section>
       
-        <!-- Section Pourquoi choisir -->
         <section class="why-choose-section">
           <div class="container">
             <h2>Pourquoi choisir Baraime El Rahma?</h2>
@@ -123,7 +126,7 @@
                   </div>
                 </div>
                 
-                <a href="#" class="app-link">Accéder au portail parents →</a>
+                <a href="espaceparent.php" class="app-link">Accéder au portail parents →</a>
               </div>
               
               <div class="communication-image">
@@ -141,7 +144,7 @@
             
             <div class="cta-buttons">
               <a href="contact.html" class="btn btn-white">Planifier une visite</a>
-              <a href="#" class="btn btn-outline-white">En savoir plus</a>
+              <a href="A propos.html" class="btn btn-outline-white">En savoir plus</a>
             </div>
           </div>
         </section>
@@ -153,14 +156,12 @@
             <div class="footer-section footer-brand">
               <div class="footer-logo">
                <h3>Baraime El Rahma</h3>
-                
               </div>
               <p class="footer-description">
                 Un environnement sûr, nurturant et éducatif pour les enfants. Nous nous engageons à favoriser le développement et l'apprentissage des enfants.
               </p>
             </div>
       
-            
             <div class="footer-section">
               <h3>Contact</h3>
               <div class="contact-info">
@@ -202,23 +203,22 @@
               <h3>Liens rapides</h3>
               <ul class="footer-links">
                 <li><a href="index.html">Accueil</a></li>
-                <li><a href="#">À propos</a></li>
+                <li><a href="A propos.html">À propos</a></li>
                 <li><a href="contact.html">Contact</a></li>
-                <li><a href="#">Espace Parents</a></li>
-                <li><a href="#">Espace Personnel</a></li>
+                <li><a href="espaceparent.php">Espace Parents</a></li>
+                <li><a href="espace_professeur.php">Espace Personnel</a></li>
               </ul>
             </div>
       
-            
             <div class="footer-section">
               <h3>Restez informés</h3>
               <div class="social-links">
-                <a href="#" aria-label="Facebook">
+                <a href="https://www.facebook.com/" aria-label="Facebook">
                   <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                     <path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z"/>
                   </svg>
                 </a>
-                <a href="#" aria-label="Instagram">
+                <a href="https://www.instagram.com/" aria-label="Instagram">
                   <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                     <rect x="2" y="2" width="20" height="20" rx="5" ry="5"/>
                     <path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"/>
@@ -230,9 +230,17 @@
           </div>
           <div class="footer-bottom">
             <div class="footer-container">
-              <p>&copy; 2025 Baraime El Rahma. Tous droits réservés.</p>
+              <p>© 2025 Baraime El Rahma. Tous droits réservés.</p>
             </div>
           </div>
         </footer>
+      
+        <script>
+          // JavaScript to toggle hamburger menu
+          document.querySelector('.hamburger').addEventListener('click', () => {
+            document.querySelector('.nav-links').classList.toggle('active');
+            document.querySelector('.hamburger').classList.toggle('active');
+          });
+        </script>
       </body>
       </html>
