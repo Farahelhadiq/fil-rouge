@@ -1,18 +1,16 @@
-// Script pour le menu hamburger et les fonctionnalités interactives
 
 document.addEventListener('DOMContentLoaded', function() {
-    // Gestion du menu hamburger
+
     const hamburger = document.querySelector('.hamburger');
     const navLinks = document.querySelector('.nav-links');
     const body = document.body;
 
     if (hamburger && navLinks) {
         hamburger.addEventListener('click', function() {
-            // Toggle des classes actives
+
             hamburger.classList.toggle('active');
             navLinks.classList.toggle('active');
-            
-            // Empêcher le scroll quand le menu est ouvert
+
             if (navLinks.classList.contains('active')) {
                 body.style.overflow = 'hidden';
             } else {
@@ -20,7 +18,6 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         });
 
-        // Fermer le menu quand on clique sur un lien
         const navLinksItems = navLinks.querySelectorAll('a');
         navLinksItems.forEach(link => {
             link.addEventListener('click', function() {
@@ -30,7 +27,6 @@ document.addEventListener('DOMContentLoaded', function() {
             });
         });
 
-        // Fermer le menu quand on clique en dehors
         document.addEventListener('click', function(event) {
             if (!hamburger.contains(event.target) && !navLinks.contains(event.target)) {
                 hamburger.classList.remove('active');
@@ -40,7 +36,6 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 
-    // Gestion des FAQ accordéons
     const faqItems = document.querySelectorAll('.faq-item');
     
     faqItems.forEach(item => {
@@ -48,31 +43,27 @@ document.addEventListener('DOMContentLoaded', function() {
         
         if (question) {
             question.addEventListener('click', function() {
-                // Fermer tous les autres items
+
                 faqItems.forEach(otherItem => {
                     if (otherItem !== item) {
                         otherItem.classList.remove('active');
                     }
                 });
-                
-                // Toggle l'item actuel
+
                 item.classList.toggle('active');
             });
         }
     });
 
-    // Gestion du dropdown dans le menu mobile
     const dropdown = document.querySelector('.dropdown');
     const dropbtn = document.querySelector('.dropbtn');
     const dropdownContent = document.querySelector('.dropdown-content');
 
     if (dropdown && dropbtn && dropdownContent) {
-        // Sur mobile, le dropdown est toujours visible, donc pas besoin de JavaScript spécial
-        // Mais on peut ajouter une animation smooth
         dropbtn.addEventListener('click', function(e) {
             e.preventDefault();
             
-            // Si on est sur mobile, défiler vers le dropdown
+  
             if (window.innerWidth <= 768) {
                 dropdownContent.scrollIntoView({ 
                     behavior: 'smooth', 
@@ -82,7 +73,6 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 
-    // Smooth scroll pour les ancres
     document.querySelectorAll('a[href^="#"]').forEach(anchor => {
         anchor.addEventListener('click', function (e) {
             e.preventDefault();
@@ -96,7 +86,6 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     });
 
-    // Effet de parallaxe léger sur la navbar
     let lastScrollTop = 0;
     const navbar = document.querySelector('nav');
     
@@ -104,17 +93,16 @@ document.addEventListener('DOMContentLoaded', function() {
         const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
         
         if (scrollTop > lastScrollTop && scrollTop > 100) {
-            // Scroll vers le bas
+  
             navbar.style.transform = 'translateY(-100%)';
         } else {
-            // Scroll vers le haut
+  
             navbar.style.transform = 'translateY(0)';
         }
         
         lastScrollTop = scrollTop;
     });
 
-    // Animation d'apparition des éléments au scroll
     const observerOptions = {
         threshold: 0.1,
         rootMargin: '0px 0px -50px 0px'
@@ -129,7 +117,6 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }, observerOptions);
 
-    // Observer les éléments à animer
     const animateElements = document.querySelectorAll('.contact-item, .faq-item, .map-container');
     animateElements.forEach(el => {
         el.style.opacity = '0';
@@ -139,13 +126,11 @@ document.addEventListener('DOMContentLoaded', function() {
     });
 });
 
-// Fonction pour gérer le redimensionnement de la fenêtre
 window.addEventListener('resize', function() {
     const hamburger = document.querySelector('.hamburger');
     const navLinks = document.querySelector('.nav-links');
     const body = document.body;
 
-    // Si on redimensionne vers desktop, fermer le menu mobile
     if (window.innerWidth > 768) {
         if (hamburger && navLinks) {
             hamburger.classList.remove('active');
@@ -155,9 +140,8 @@ window.addEventListener('resize', function() {
     }
 });
 
-// Fonction pour améliorer l'accessibilité
 function improveAccessibility() {
-    // Ajouter des attributs ARIA
+  
     const hamburger = document.querySelector('.hamburger');
     const navLinks = document.querySelector('.nav-links');
     
@@ -167,7 +151,6 @@ function improveAccessibility() {
         navLinks.setAttribute('aria-hidden', 'true');
     }
 
-    // Gérer les attributs ARIA lors du toggle
     const originalToggle = hamburger.onclick;
     hamburger.addEventListener('click', function() {
         const isExpanded = hamburger.getAttribute('aria-expanded') === 'true';
@@ -175,7 +158,6 @@ function improveAccessibility() {
         navLinks.setAttribute('aria-hidden', isExpanded);
     });
 
-    // Ajouter la navigation au clavier pour les FAQ
     const faqQuestions = document.querySelectorAll('.faq-question');
     faqQuestions.forEach(question => {
         question.setAttribute('tabindex', '0');
@@ -188,5 +170,4 @@ function improveAccessibility() {
     });
 }
 
-// Initialiser l'accessibilité
 document.addEventListener('DOMContentLoaded', improveAccessibility);

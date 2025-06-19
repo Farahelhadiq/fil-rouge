@@ -35,12 +35,50 @@ function supprimerEnfant($id_enfant) {
     }
 }
 
+// Fonction pour supprimer un professeur et ses associations
+function supprimerProfesseur($id_professeur) {
+    if (!is_numeric($id_professeur)) {
+        throw new InvalidArgumentException("ID professeur invalide.");
+    }
+    $pdo = connectDB();
+
+    $pdo->beginTransaction();
+
+    try {
+        // Supprimer les associations dans professeurs_groupes
+        $stmtProfGroupe = $pdo->prepare("DELETE FROM professeurs_groupes WHERE id_professeur = ?");
+        $stmtProfGroupe->execute([$id_professeur]);
+
+        // Supprimer le professeur
+        $stmt = $pdo->prepare("DELETE FROM professeur WHERE id_professeur = ?");
+        $stmt->execute([$id_professeur]);
+
+        $pdo->commit();
+        return true;
+    } catch (PDOException $e) {
+        $pdo->rollBack();
+        throw new RuntimeException("Erreur lors de la suppression : " . $e->getMessage());
+    }
+}
+
 // Suppression enfant
-if (isset($_GET['delete_id'])) {
-    $idToDelete = (int)$_GET['delete_id'];
+if (isset($_GET['delete_enfant_id'])) {
+    $idToDelete = (int)$_GET['delete_enfant_id'];
     try {
         supprimerEnfant($idToDelete);
-        header("Location: admin_dashboard.php?msg=deleted");
+        header("Location: admin_dashboard.php?msg=child_deleted");
+        exit;
+    } catch (Exception $e) {
+        $errorDelete = $e->getMessage();
+    }
+}
+
+// Suppression professeur
+if (isset($_GET['delete_prof_id'])) {
+    $idToDelete = (int)$_GET['delete_prof_id'];
+    try {
+        supprimerProfesseur($idToDelete);
+        header("Location: admin_dashboard.php?msg=prof_deleted");
         exit;
     } catch (Exception $e) {
         $errorDelete = $e->getMessage();
@@ -573,8 +611,6 @@ try {
             padding: 8px 16px;
             border: none;
             border-radius: 6px;
-            background: #3b82f6;
-            color: white;
             font-size: 14px;
             font-weight: 600;
             cursor: pointer;
@@ -583,8 +619,27 @@ try {
             margin-top: 6px;
         }
 
-        button:hover {
+        .action-buttons {
+            display: flex;
+            gap: 8px;
+        }
+
+        .edit-btn {
+            background: #3b82f6;
+            color: white;
+        }
+
+        .edit-btn:hover {
             background: #2563eb;
+        }
+
+        .delete-btn {
+            background: #f87171;
+            color: white;
+        }
+
+        .delete-btn:hover {
+            background: #dc2626;
         }
 
         .notification {
@@ -695,8 +750,12 @@ try {
                 <p class="page-subtitle">Gérez les enfants, professeurs et planning</p>
             </div>
 
-            <?php if (isset($_GET['msg']) && $_GET['msg'] === 'deleted'): ?>
-                <div class="notification success">Enfant supprimé avec succès.</div>
+            <?php if (isset($_GET['msg'])): ?>
+                <?php if ($_GET['msg'] === 'child_deleted'): ?>
+                    <div class="notification success">Enfant supprimé avec succès.</div>
+                <?php elseif ($_GET['msg'] === 'prof_deleted'): ?>
+                    <div class="notification success">Professeur supprimé avec succès.</div>
+                <?php endif; ?>
             <?php endif; ?>
 
             <?php if (!empty($errorDelete)): ?>
@@ -741,10 +800,14 @@ try {
                                         <td><?= htmlspecialchars($enfant['nom_groupe'] ?? 'Non défini') ?></td>
                                         <td><?= htmlspecialchars(trim($enfant['prenom_parent'] . ' ' . $enfant['nom_parent'])) ?></td>
                                         <td>
-                                            <a href="modifier_enfant.php?id=<?= $enfant['id_enfant'] ?>"><button><i class="fa-solid fa-pen"></i></button></a>
-                                            <a href="admin_dashboard.php?delete_id=<?= $enfant['id_enfant'] ?>" onclick="return confirm('Confirmer la suppression ?');">
-                                                <button><i class="fa-solid fa-trash-can"></i></button>
-                                            </a>
+                                            <div class="action-buttons">
+                                                <a href="modifier_enfant.php?id=<?= $enfant['id_enfant'] ?>">
+                                                    <button class="edit-btn"><i class="fa-solid fa-pen"></i></button>
+                                                </a>
+                                                <a href="admin_dashboard.php?delete_enfant_id=<?= $enfant['id_enfant'] ?>" onclick="return confirm('Confirmer la suppression ?');">
+                                                    <button class="delete-btn"><i class="fa-solid fa-trash-can"></i></button>
+                                                </a>
+                                            </div>
                                         </td>
                                     </tr>
                                 <?php endforeach; ?>
@@ -808,10 +871,14 @@ try {
                                         <td><?= htmlspecialchars($prof['prenom']) ?></td>
                                         <td><?= htmlspecialchars($prof['email']) ?></td>
                                         <td>
-                                            <a href="modifier_professeur.php?id=<?= $prof['id_professeur'] ?>"><button>Modifier</button></a>
-                                            <a href="supprimer_professeur.php?id=<?= $prof['id_professeur'] ?>" onclick="return confirm('Supprimer ce professeur ?');">
-                                                <button>Supprimer</button>
-                                            </a>
+                                            <div class="action-buttons">
+                                                <a href="modifier_professeur.php?id=<?= $prof['id_professeur'] ?>">
+                                                    <button class="edit-btn"><i class="fa-solid fa-pen"></i></button>
+                                                </a>
+                                                <a href="admin_dashboard.php?delete_prof_id=<?= $prof['id_professeur'] ?>" onclick="return confirm('Supprimer ce professeur ?');">
+                                                    <button class="delete-btn"><i class="fa-solid fa-trash-can"></i></button>
+                                                </a>
+                                            </div>
                                         </td>
                                     </tr>
                                 <?php endforeach; ?>

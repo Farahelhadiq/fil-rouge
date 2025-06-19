@@ -29,39 +29,64 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $id_parent = $_POST['id_parent'] ?? null;
     $annee_scolaire = trim($_POST['annee_scolaire'] ?? '');
 
-    if ($nom === '' || $prenom === '' || $genre === '' || $date_naissance === '' || !$id_groupe || !$id_parent || $annee_scolaire === '') {
+    // Validate required fields, excluding id_parent
+    if ($nom === '' || $prenom === '' || $genre === '' || $date_naissance === '' || !$id_groupe || $annee_scolaire === '') {
         $error = "Veuillez remplir tous les champs obligatoires.";
     } elseif (!preg_match('/^\d{4}-\d{4}$/', $annee_scolaire)) {
         $error = "L'année scolaire doit être au format AAAA-AAAA (ex. 2024-2025).";
     } else {
         try {
-            // Start a transaction
-            $pdo->beginTransaction();
-
-            // Insert into enfants table (without id_groupe)
-            $stmtInsertEnfant = $pdo->prepare("
-                INSERT INTO enfants (nom, prenom, genre, photo, date_naissance, id_parent)
-                VALUES (?, ?, ?, ?, ?, ?)
+            // Verify if the child already exists
+            $stmtCheckEnfant = $pdo->prepare("
+                SELECT COUNT(*) FROM enfants 
+                WHERE nom = ? AND prenom = ? AND date_naissance = ?
             ");
-            $stmtInsertEnfant->execute([$nom, $prenom, $genre, $photo, $date_naissance, $id_parent]);
+            $stmtCheckEnfant->execute([$nom, $prenom, $date_naissance]);
+            $count = $stmtCheckEnfant->fetchColumn();
 
-            // Get the ID of the newly inserted child
-            $id_enfant = $pdo->lastInsertId();
+            if ($count > 0) {
+                $error = "L’enfant existe déjà dans la base de données.";
+            } else {
+                // Validate id_parent if provided
+                if ($id_parent !== null && $id_parent !== '') {
+                    $stmtCheckParent = $pdo->prepare("SELECT COUNT(*) FROM parent WHERE id_parent = ?");
+                    $stmtCheckParent->execute([$id_parent]);
+                    $parentExists = $stmtCheckParent->fetchColumn();
+                    if (!$parentExists) {
+                        $error = "Le parent sélectionné n'existe pas dans la base de données.";
+                    }
+                }
 
-            // Insert into Enfant_groupe table
-            $stmtInsertGroupeEnfant = $pdo->prepare("
-                INSERT INTO Enfant_groupe (id_groupe, id_enfant, annee_scolaire)
-                VALUES (?, ?, ?)
-            ");
-            $stmtInsertGroupeEnfant->execute([$id_groupe, $id_enfant, $annee_scolaire]);
+                if (!$error) {
+                    // Start a transaction
+                    $pdo->beginTransaction();
 
-            // Commit the transaction
-            $pdo->commit();
+                    // Insert into enfants table, allowing NULL for id_parent
+                    $stmtInsertEnfant = $pdo->prepare("
+                        INSERT INTO enfants (nom, prenom, genre, photo, date_naissance, id_parent)
+                        VALUES (?, ?, ?, ?, ?, ?)
+                    ");
+                    $stmtInsertEnfant->execute([$nom, $prenom, $genre, $photo, $date_naissance, $id_parent ?: null]);
 
-            $success = "Enfant ajouté et associé au groupe avec succès.";
-            // Redirect to dashboard after successful addition
-            header('Location: admin_dashboard.php');
-            exit;
+                    // Get the ID of the newly inserted child
+                    $id_enfant = $pdo->lastInsertId();
+
+                    // Insert into Enfant_groupe table
+                    $stmtInsertGroupeEnfant = $pdo->prepare("
+                        INSERT INTO Enfant_groupe (id_groupe, id_enfant, annee_scolaire)
+                        VALUES (?, ?, ?)
+                    ");
+                    $stmtInsertGroupeEnfant->execute([$id_groupe, $id_enfant, $annee_scolaire]);
+
+                    // Commit the transaction
+                    $pdo->commit();
+
+                    $success = "Enfant ajouté et associé au groupe avec succès.";
+                    // Redirect to dashboard after successful addition
+                    header('Location: admin_dashboard.php');
+                    exit;
+                }
+            }
         } catch (PDOException $e) {
             // Roll back the transaction on error
             $pdo->rollBack();
@@ -548,9 +573,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                         <input type="text" name="annee_scolaire" required value="<?= htmlspecialchars($_POST['annee_scolaire'] ?? '') ?>" pattern="\d{4}-\d{4}" placeholder="AAAA-AAAA">
                     </div>
                     <div class="form-group">
-                        <label>Parent *</label>
-                        <select name="id_parent" required>
-                            <option value="">-- Choisir un parent --</option>
+                        <label>Parent (facultatif)</label>
+                        <select name="id_parent">
+                            <option value="">-- Aucun parent --</option>
                             <?php foreach ($parents as $p): ?>
                                 <option value="<?= $p['id_parent'] ?>" <?= (isset($_POST['id_parent']) && $_POST['id_parent'] == $p['id_parent']) ? 'selected' : '' ?>>
                                     <?= htmlspecialchars($p['prenom'] . ' ' . $p['nom']) ?>

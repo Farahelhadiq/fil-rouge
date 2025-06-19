@@ -550,7 +550,6 @@ try {
             <div class="card">
                 <div class="card-header">
                     <h2 class="card-title">Formulaire de modification</h2>
-                    <span class="card-icon"><i class="fa-solid fa-user-tie"></i></span>
                 </div>
                 <form method="POST" action="">
                     <div class="form-group">

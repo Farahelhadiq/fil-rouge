@@ -43,6 +43,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Connexion Administrateur</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css">
     <style>
         * {
             margin: 0;
@@ -499,6 +500,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             }
         }
     </style>
+
 </head>
 <body>
     <div class="main">
@@ -513,7 +515,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 <div class="form-group">
                     <div class="password-field">
                         <input type="password" name="mot_de_passe" id="password" class="form-input" placeholder="Mot de passe" required>
-                        <button type="button" class="password-toggle" onclick="togglePassword()">👁</button>
+                        <button type="button" class="password-toggle" onclick="togglePassword()"><i class="fa-solid fa-eye-slash"></i></button>
                     </div>
                 </div>
                 
@@ -529,14 +531,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     <script>
         function togglePassword() {
             const passwordField = document.getElementById('password');
-            const toggleButton = document.querySelector('.password-toggle');
-            
+            const toggleButton = document.querySelector('.password-toggle i');
             if (passwordField.type === 'password') {
                 passwordField.type = 'text';
-                toggleButton.textContent = '🙈';
+                toggleButton.classList.remove('fa-eye-slash');
+                toggleButton.classList.add('fa-eye');
             } else {
                 passwordField.type = 'password';
-                toggleButton.textContent = '👁';
+                toggleButton.classList.remove('fa-eye');
+                toggleButton.classList.add('fa-eye-slash');
             }
         }
     </script>

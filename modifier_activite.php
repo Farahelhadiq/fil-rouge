@@ -514,6 +514,7 @@ try {
             }
         }
     </style>
+     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css">
 </head>
 <body>
     <div class="app-container">
@@ -529,31 +530,31 @@ try {
                     <p>Administrateur</p>
                 </div>
             </div>
-            <div class="nav-menu">
+             <div class="nav-menu">
                 <a href="admin_dashboard.php" class="nav-item">
-                    <span class="nav-icon">🏠</span>
+                    <span class="nav-icon"><i class="fa-solid fa-house"></i></span>
                     <span class="nav-text">Dashboard</span>
                 </a>
                 <a href="ajouter_enfant.php" class="nav-item">
-                    <span class="nav-icon">👶</span>
+                    <span class="nav-icon"><i class="fa-regular fa-user"></i></span>
                     <span class="nav-text">Ajouter un enfant</span>
                 </a>
                 <a href="ajouter_professeur.php" class="nav-item">
-                    <span class="nav-icon">👩‍🏫</span>
+                    <span class="nav-icon"><i class="fa-solid fa-user-tie"></i></span>
                     <span class="nav-text">Ajouter un professeur</span>
                 </a>
-                <a href="gestion_planning.php" class="nav-item active">
-                    <span class="nav-icon">🕒</span>
+                <a href="gestion_planning.php" class="nav-item">
+                    <span class="nav-icon"><i class="fa-regular fa-clock"></i></span>
                     <span class="nav-text">Gérer le planning</span>
                 </a>
                 <a href="ajouter_activite.php" class="nav-item">
-                    <span class="nav-icon">➕</span>
+                    <span class="nav-icon"><i class="fa-solid fa-plus"></i></span>
                     <span class="nav-text">Ajouter une activité</span>
                 </a>
             </div>
-            <div class="logout-section">
+                <div class="logout-section">
                 <a href="logout.php" class="logout-btn">
-                    <span class="nav-icon">🚪</span>
+                    <span class="nav-icon"><i class="fa-solid fa-right-from-bracket"></i></span>
                     <span>Déconnexion</span>
                 </a>
             </div>
@@ -578,7 +579,6 @@ try {
             <div class="card">
                 <div class="card-header">
                     <h2 class="card-title">Formulaire de modification</h2>
-                    <span class="card-icon">➕</span>
                 </div>
                 <form method="POST" action="">
                     <div class="form-group">

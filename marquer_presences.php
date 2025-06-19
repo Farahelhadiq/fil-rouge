@@ -43,7 +43,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $justification = $_POST['justification'][$id_enfant] ?? null;
 
             if ($is_absent) {
-                // Validation des champs
                 if (empty($heure_debut) || empty($heure_fin)) {
                     throw new Exception("Les heures de début et de fin sont obligatoires pour une absence.");
                 }
@@ -523,7 +522,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     <span class="nav-icon"><i class="fa-solid fa-house"></i></span>
                     <span class="nav-text">Dashboard</span>
                 </a>
-                <a href="marquer_presences.php" class="nav-item active">
+                <a href="marquer_presences.php" class="nav-item ">
                     <span class="nav-icon"><i class="fa-solid fa-calendar-xmark"></i></span>
                     <span class="nav-text">Marquer absence</span>
                 </a>
@@ -559,7 +558,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                         <h2 class="card-title">Marquer absence</h2>
                         <span class="card-icon"><i class="fa-solid fa-calendar-xmark"></i></span>
                     </div>
-                    <div class="heure-actuelle">Heure actuelle : <span id="heure_actuelle">--:--:--</span></div>
 
                     <form method="post" action="">
                         <table>

@@ -27,6 +27,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $mot_de_passe = trim($_POST['mot_de_passe']);
     $id_groupe = $_POST['id_groupe'] ?? null;
     $annee_scolaire = trim($_POST['annee_scolaire'] ?? '');
+
     if (empty($nom) || empty($prenom) || empty($email) || empty($mot_de_passe) || empty($id_groupe) || empty($annee_scolaire)) {
         $errorMessage = "Tous les champs sont obligatoires.";
     } elseif (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
@@ -35,10 +36,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $errorMessage = "Année scolaire invalide.";
     } else {
         try {
-            $stmt = $pdo->prepare("SELECT COUNT(*) FROM professeur WHERE email = ?");
-            $stmt->execute([$email]);
+            // Check if professor already exists by nom, prenom, and email
+            $stmt = $pdo->prepare("SELECT COUNT(*) FROM professeur WHERE nom = ? AND prenom = ? AND email = ?");
+            $stmt->execute([$nom, $prenom, $email]);
             if ($stmt->fetchColumn() > 0) {
-                $errorMessage = "Un professeur avec cet email existe déjà.";
+                $errorMessage = "Le professeur existe déjà dans la base de données.";
             } else {
                 $hashedPassword = password_hash($mot_de_passe, PASSWORD_DEFAULT);
                 $pdo->beginTransaction();
@@ -500,7 +502,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                         <input type="text" id="prenom" name="prenom" required value="<?= htmlspecialchars($_POST['prenom'] ?? '') ?>">
                     </div>
                     <div class="form-group">
-                        <label okr="email" for="email">Email</label>
+                        <label for="email">Email</label>
                         <input type="email" id="email" name="email" required value="<?= htmlspecialchars($_POST['email'] ?? '') ?>">
                     </div>
                     <div class="form-group">
@@ -521,27 +523,28 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     <div class="form-group">
                         <label for="annee_scolaire">Année scolaire</label>
                         <input type="number" id="annee_scolaire" name="annee_scolaire" required value="<?php echo htmlspecialchars($_POST['annee_scolaire'] ?? date('Y')) ?>" min="2000" max="<?php echo date('Y') + 1 ?>">
+                    </div>
+                    <div class="form-actions">
+                        <button type="submit">Ajouter</button>
+                        <a href="admin_dashboard.php"><button type="button">Annuler</button></a>
+                    </div>
+                </form>
             </div>
-            <div class="form-actions">
-                <button type="submit">Ajouter</button>
-                <a href="admin_dashboard.php"><button type="button">Annuler</button></a>
-            </div>
-        </form>
+        </div>
     </div>
-</div>
 
-<script>
-    function toggleSidebar() {
-        const sidebar = document.querySelector('.sidebar');
-        const mainContent = document.querySelector('.main-content');
-        const toggleBtn = document.querySelector('.toggle-btn');
-        const showSidebarBtn = document.querySelector('.show-sidebar-btn');
+    <script>
+        function toggleSidebar() {
+            const sidebar = document.querySelector('.sidebar');
+            const mainContent = document.querySelector('.main-content');
+            const toggleBtn = document.querySelector('.toggle-btn');
+            const showSidebarBtn = document.querySelector('.show-sidebar-btn');
 
-        sidebar.classList.toggle('hidden');
-        mainContent.classList.toggle('full-width');
-        toggleBtn.classList.toggle('hidden');
-        showSidebarBtn.classList.toggle('visible');
-    }
-</script>
+            sidebar.classList.toggle('hidden');
+            mainContent.classList.toggle('full-width');
+            toggleBtn.classList.toggle('hidden');
+            showSidebarBtn.classList.toggle('visible');
+        }
+    </script>
 </body>
 </html>

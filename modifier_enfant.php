@@ -34,7 +34,7 @@ try {
     }
 
     // Récupérer le groupe actuel pour l'enfant pour l'année scolaire courante
-    $annee_scolaire = date('Y'); // année en cours (exemple simple)
+    $annee_scolaire = date('Y') . '-' . (date('Y') + 1); // Format AAAA-AAAA
     $stmtGroupeEnfant = $pdo->prepare("SELECT id_groupe FROM Enfant_groupe WHERE id_enfant = ? AND annee_scolaire = ?");
     $stmtGroupeEnfant->execute([$id_enfant, $annee_scolaire]);
     $enfant_groupe = $stmtGroupeEnfant->fetch(PDO::FETCH_ASSOC);
@@ -54,35 +54,48 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $id_groupe = $_POST['id_groupe'] ?? null;
     $id_parent = $_POST['id_parent'] ?? null;
 
-    if ($nom === '' || $prenom === '' || $genre === '' || $date_naissance === '' || !$id_groupe || !$id_parent) {
+    // Validate required fields, excluding id_parent
+    if ($nom === '' || $prenom === '' || $genre === '' || $date_naissance === '' || !$id_groupe) {
         $error = "Veuillez remplir tous les champs obligatoires.";
     } else {
         try {
-            // Mise à jour de la table enfants (hors groupe)
-            $stmtUpdate = $pdo->prepare("
-                UPDATE enfants SET nom = ?, prenom = ?, genre = ?, photo = ?, date_naissance = ?, id_parent = ?
-                WHERE id_enfant = ?
-            ");
-            $stmtUpdate->execute([$nom, $prenom, $genre, $photo, $date_naissance, $id_parent, $id_enfant]);
-
-            // Mise à jour ou insertion dans Enfant_groupe pour l'année scolaire courante
-            if ($enfant_groupe) {
-                // Update si déjà affecté à un groupe cette année
-                $stmtUpdateGroupe = $pdo->prepare("
-                    UPDATE Enfant_groupe SET id_groupe = ?
-                    WHERE id_enfant = ? AND annee_scolaire = ?
-                ");
-                $stmtUpdateGroupe->execute([$id_groupe, $id_enfant, $annee_scolaire]);
-            } else {
-                // Insert nouvelle affectation
-                $stmtInsertGroupe = $pdo->prepare("
-                    INSERT INTO Enfant_groupe (id_enfant, id_groupe, annee_scolaire) VALUES (?, ?, ?)
-                ");
-                $stmtInsertGroupe->execute([$id_enfant, $id_groupe, $annee_scolaire]);
+            // Validate id_parent if provided
+            if ($id_parent !== null && $id_parent !== '') {
+                $stmtCheckParent = $pdo->prepare("SELECT COUNT(*) FROM parent WHERE id_parent = ?");
+                $stmtCheckParent->execute([$id_parent]);
+                $parentExists = $stmtCheckParent->fetchColumn();
+                if (!$parentExists) {
+                    $error = "Le parent sélectionné n'existe pas dans la base de données.";
+                }
             }
 
-            header('Location: admin_dashboard.php');
-            exit;
+            if (!$error) {
+                // Mise à jour de la table enfants (hors groupe)
+                $stmtUpdate = $pdo->prepare("
+                    UPDATE enfants SET nom = ?, prenom = ?, genre = ?, photo = ?, date_naissance = ?, id_parent = ?
+                    WHERE id_enfant = ?
+                ");
+                $stmtUpdate->execute([$nom, $prenom, $genre, $photo, $date_naissance, $id_parent ?: null, $id_enfant]);
+
+                // Mise à jour ou insertion dans Enfant_groupe pour l'année scolaire courante
+                if ($enfant_groupe) {
+                    // Update si déjà affecté à un groupe cette année
+                    $stmtUpdateGroupe = $pdo->prepare("
+                        UPDATE Enfant_groupe SET id_groupe = ?
+                        WHERE id_enfant = ? AND annee_scolaire = ?
+                    ");
+                    $stmtUpdateGroupe->execute([$id_groupe, $id_enfant, $annee_scolaire]);
+                } else {
+                    // Insert nouvelle affectation
+                    $stmtInsertGroupe = $pdo->prepare("
+                        INSERT INTO Enfant_groupe (id_enfant, id_groupe, annee_scolaire) VALUES (?, ?, ?)
+                    ");
+                    $stmtInsertGroupe->execute([$id_enfant, $id_groupe, $annee_scolaire]);
+                }
+
+                header('Location: admin_dashboard.php');
+                exit;
+            }
         } catch (PDOException $e) {
             $error = "Erreur lors de la mise à jour : " . $e->getMessage();
         }
@@ -104,6 +117,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 <head>
     <meta charset="UTF-8">
     <title>Modifier un enfant</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css">
     <style>
         * {
             margin: 0;
@@ -245,7 +259,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         }
 
         .nav-item.active {
-            background: white;
+            background: rgba(255,255,255,0.15);
             color: white;
             border-left-color: white;
         }
@@ -309,15 +323,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
         .page-title {
             font-size: 32px;
-            font-weight: 700px;
-            color: #333e3b;
+            font-weight: 700;
+            color: #1e293b;
             margin-bottom: 8px;
         }
 
         .page-subtitle {
             font-size: 16px;
-            color: #664748b;
-            font-weight: 400px;
+            color: #64748b;
+            font-weight: 400;
         }
 
         .card {
@@ -340,12 +354,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         .card-title {
             font-size: 20px;
             font-weight: 600;
-            color: #333e3b;
+            color: #1e293b;
         }
 
         .card-icon {
             font-size: 20px;
-            color: #33b82f6;
+            color: #3b82f6;
         }
 
         .form-group {
@@ -355,9 +369,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         .form-group label {
             display: block;
             font-size: 12px;
-            color: #664748b;
+            color: #64748b;
             text-transform: uppercase;
-            font-weight: 600px;
+            font-weight: 600;
             margin-bottom: 8px;
         }
 
@@ -368,7 +382,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             border: 1px solid #e2e8f0;
             border-radius: 6px;
             font-size: 14px;
-            color: #333e3b;
+            color: #1e293b;
             background: #fff;
             transition: border-color 0.2s ease;
         }
@@ -376,7 +390,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         .form-group input:focus,
         .form-group select:focus {
             outline: none;
-            border-color: #33b82f6;
+            border-color: #3b82f6;
             box-shadow: 0 0 0 2px rgba(59,130,246,0.1);
         }
 
@@ -391,27 +405,27 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             border: none;
             border-radius: 6px;
             font-size: 14px;
-            font-weight: 600px;
+            font-weight: 600;
             cursor: pointer;
             transition: background 0.2s ease;
         }
 
         button[type="submit"] {
-            background: #33b82f6;
+            background: #3b82f6;
             color: white;
         }
 
         button[type="submit"]:hover {
-            background: #22563eb;
+            background: #2563eb;
         }
 
         button[type="button"] {
             background: #e2e8f0;
-            color: #333e3b;
+            color: #1e293b;
         }
 
         button[type="button"]:hover {
-            background: #ccbd5e1;
+            background: #cbd5e1;
         }
 
         .notification {
@@ -422,20 +436,17 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         }
 
         .notification.error {
-            background: #ffee2e2;
-            color: #333e3b;
-            border: 1px solid #ff87171;
+            background: #fee2e2;
+            color: #1e293b;
+            border: 1px solid #f87171;
         }
 
         .notification.success {
-            background: #ee6fffa;
-            color: #333e3b;
-            border: 1px solid #999f6e4;
+            background: #e6fffa;
+            color: #1e293b;
+            border: 1px solid #99f6e4;
         }
-        .button{
-            background: #3b82f6;
-            color: white;
-        }
+
         @media (max-width: 1024px) {
             .sidebar {
                 transform: translateX(-100%);
@@ -494,29 +505,29 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             </div>
             <div class="nav-menu">
                 <a href="admin_dashboard.php" class="nav-item">
-                    <span class="nav-icon">🏠</span>
+                    <span class="nav-icon"><i class="fa-solid fa-house"></i></span>
                     <span class="nav-text">Dashboard</span>
                 </a>
                 <a href="ajouter_enfant.php" class="nav-item">
-                    <span class="nav-icon">👶</span>
+                    <span class="nav-icon"><i class="fa-regular fa-user"></i></span>
                     <span class="nav-text">Ajouter un enfant</span>
                 </a>
                 <a href="ajouter_professeur.php" class="nav-item">
-                    <span class="nav-icon">👩‍🏫</span>
+                    <span class="nav-icon"><i class="fa-solid fa-user-tie"></i></span>
                     <span class="nav-text">Ajouter un professeur</span>
                 </a>
                 <a href="gestion_planning.php" class="nav-item">
-                    <span class="nav-icon">🕒</span>
+                    <span class="nav-icon"><i class="fa-regular fa-clock"></i></span>
                     <span class="nav-text">Gérer le planning</span>
                 </a>
                 <a href="ajouter_activite.php" class="nav-item">
-                    <span class="nav-icon">➕</span>
+                    <span class="nav-icon"><i class="fa-solid fa-plus"></i></span>
                     <span class="nav-text">Ajouter une activité</span>
                 </a>
             </div>
             <div class="logout-section">
                 <a href="logout.php" class="logout-btn">
-                    <span class="nav-icon">🚪</span>
+                    <span class="nav-icon"><i class="fa-solid fa-right-from-bracket"></i></span>
                     <span>Déconnexion</span>
                 </a>
             </div>
@@ -535,7 +546,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             <div class="card">
                 <div class="card-header">
                     <h2 class="card-title">Formulaire de modification</h2>
-                    <span class="card-icon">👶</span>
                 </div>
                 <form method="POST" action="">
                     <div class="form-group">
@@ -575,9 +585,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                         </select>
                     </div>
                     <div class="form-group">
-                        <label for="id_parent">Parent *</label>
-                        <select name="id_parent" id="id_parent" required>
-                            <option value="">-- Choisir un parent --</option>
+                        <label for="id_parent">Parent (facultatif)</label>
+                        <select name="id_parent" id="id_parent">
+                            <option value="">-- Aucun parent --</option>
                             <?php foreach ($parents as $p): ?>
                                 <option value="<?= $p['id_parent'] ?>" <?= ($id_parent == $p['id_parent']) ? 'selected' : '' ?>>
                                     <?= htmlspecialchars($p['prenom'] . ' ' . $p['nom']) ?>
@@ -586,7 +596,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                         </select>
                     </div>
                     <div class="form-actions">
-                        <button type="submit" class="button">Enregistrer</button>
+                        <button type="submit">Enregistrer</button>
                         <a href="admin_dashboard.php"><button type="button">Annuler</button></a>
                     </div>
                 </form>

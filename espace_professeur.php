@@ -10,7 +10,6 @@ if (!isset($_SESSION['id_professeur'])) {
 $id_professeur = $_SESSION['id_professeur'];
 $pdo = connectDB();
 
-// Récupérer le groupe du professeur
 $stmt = $pdo->prepare("SELECT id_groupe FROM professeurs_groupes WHERE id_professeur = ? ORDER BY annee_scolaire DESC LIMIT 1");
 $stmt->execute([$id_professeur]);
 $groupe = $stmt->fetch();
@@ -23,7 +22,7 @@ $arrivees = [];
 $activites_du_jour = [];
 
 if ($id_groupe) {
-    // Enfants dans le groupe (via Enfant_groupe)
+
     $stmt = $pdo->prepare("
         SELECT e.* 
         FROM enfants e
@@ -34,7 +33,6 @@ if ($id_groupe) {
     $enfants = $stmt->fetchAll();
     $nb_total_enfants = count($enfants);
 
-    // Absents aujourd'hui
     $stmt = $pdo->prepare("SELECT id_enfant FROM absences WHERE date_ = CURDATE()");
     $stmt->execute();
     $absents = $stmt->fetchAll(PDO::FETCH_COLUMN);
@@ -42,7 +40,6 @@ if ($id_groupe) {
     $nb_enfants_presents = $nb_total_enfants - count(array_intersect(array_column($enfants, 'id_enfant'), $absents));
     $taux_presence = $nb_total_enfants > 0 ? round(($nb_enfants_presents / $nb_total_enfants) * 100, 2) : 0;
 
-    // Arrivées récentes
     $stmt = $pdo->prepare("
         SELECT e.nom, e.prenom, e.photo 
         FROM enfants e
@@ -56,7 +53,6 @@ if ($id_groupe) {
     $stmt->execute([$id_groupe]);
     $arrivees = $stmt->fetchAll();
 
-    // Activités du jour
     $stmt = $pdo->prepare("
         SELECT a.nom_activite, ga.date_d_activite 
         FROM groupes_activites ga
@@ -456,7 +452,7 @@ function getStatutActivite($date) {
                     <span class="nav-icon"><i class="fa-solid fa-house"></i></span>
                     <span class="nav-text">Dashboard</span>
                 </a>
-                <a href="marquer_presences.php" class="nav-item active">
+                <a href="marquer_presences.php" class="nav-item ">
                     <span class="nav-icon"><i class="fa-solid fa-calendar-xmark"></i></span>
                     <span class="nav-text">Marquer absence</span>
                 </a>
@@ -486,10 +482,6 @@ function getStatutActivite($date) {
                         <span class="card-icon"></span>
                     </div>
                     <div class="details-grid">
-                        <div class="detail-item">
-                            <span class="detail-label">Heure actuelle</span>
-                            <span class="detail-value" id="heureActuelleStats"></span>
-                        </div>
                         <div class="detail-item">
                             <span class="detail-label">Enfants présents</span>
                             <span class="detail-value"><?= $nb_enfants_presents ?> / <?= $nb_total_enfants ?></span>
